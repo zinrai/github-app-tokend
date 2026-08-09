@@ -1,0 +1,66 @@
+# A working stack for seeing the daemon do its job. Two things are not in the
+# repository and have to be supplied before this runs:
+#
+#   compose/key.pem   the App private key, readable by uid 10001
+#   -app-id and -installation-id below, replaced with your own
+#
+name: github-app-tokend
+
+services:
+  # A named volume starts out owned by root, and the daemon runs unprivileged.
+  # This gives it somewhere it can actually write before it starts.
+  init:
+    image: debian:trixie-slim
+    command: ["install", "-d", "-o", "10001", "-g", "10001", "-m", "0700", "/token"]
+    volumes:
+      - token:/token
+    restart: "no"
+
+  tokend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: github-app-tokend:dev
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    command:
+      - -app-id=12345
+      - -installation-id=87654321
+      - -private-key=/etc/github-app-tokend/key.pem
+      - -out=/token/token
+    # The directory is mounted rather than the key itself. A bind mount of a
+    # file that is not there yet makes Docker create a directory in its place,
+    # and the daemon then reports the key as being a directory.
+    volumes:
+      - ./compose:/etc/github-app-tokend:ro
+      - token:/token
+    # The first token is written before the process enters its loop, so a
+    # readable file is what "started" means for anything downstream.
+    healthcheck:
+      test: ["CMD", "test", "-s", "/token/token"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    restart: unless-stopped
+
+  # Stands in for an application that needs the token. It runs as the same user
+  # as the daemon because the file it reads is mode 0600.
+  consumer:
+    image: python:3.13-slim-trixie
+    depends_on:
+      tokend:
+        condition: service_healthy
+    user: "10001:10001"
+    command:
+      - python
+      - /consumer.py
+      - --token-file=/token/token
+      - --interval=15
+    volumes:
+      - ./compose/consumer.py:/consumer.py:ro
+      - token:/token:ro
+    restart: unless-stopped
+
+volumes:
+  token:
