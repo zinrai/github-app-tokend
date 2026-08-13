@@ -1,8 +1,15 @@
 FROM golang:1.26-trixie AS build
 
+# Supplied by the release workflow. Without them a build reports itself as dev,
+# which is what a build outside a release is.
+ARG VERSION=dev
+ARG COMMIT=none
+
 WORKDIR /src
 COPY go.mod *.go ./
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /github-app-tokend
+RUN CGO_ENABLED=0 go build -trimpath \
+    -ldflags="-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}" \
+    -o /github-app-tokend
 
 FROM debian:trixie-slim
 
