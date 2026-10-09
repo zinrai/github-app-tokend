@@ -79,14 +79,21 @@ func TestSuccessfulRenewalRewritesFile(t *testing.T) {
 	}
 
 	minted := make(chan struct{}, 8)
+	calls := 0
 	mint := func(context.Context) (*token, error) {
+		calls++
 		select {
 		case minted <- struct{}{}:
 		default:
 		}
-		// Past its expiry again, so the loop comes straight back and the second
-		// call is proof that the first write has finished.
-		return &token{Token: "ghs_new", ExpiresAt: time.Now().Add(-time.Minute)}, nil
+		// The first is past its expiry, so the loop comes straight back and the
+		// second call proves the first write finished. Later ones last, so the
+		// loop then waits instead of spinning until stopped.
+		expiresAt := time.Now().Add(time.Hour)
+		if calls == 1 {
+			expiresAt = time.Now().Add(-time.Minute)
+		}
+		return &token{Token: "ghs_new", ExpiresAt: expiresAt}, nil
 	}
 
 	tok := &token{Token: "ghs_old", ExpiresAt: time.Now().Add(-time.Minute)}
