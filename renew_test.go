@@ -28,9 +28,6 @@ func runLoop(t *testing.T, mint minter, out string, tok *token) func() {
 	}
 }
 
-// A delay that is too long lets the token expire, and one that is wrongly zero
-// spins the loop against the API. The two lifetimes are here because the
-// margin has to follow the token rather than a number written down once.
 func TestRenewDelayLeavesAThirdOfTheLife(t *testing.T) {
 	if d := renewDelay(time.Now().Add(time.Hour)); d < 39*time.Minute || d > 40*time.Minute {
 		t.Errorf("delay for an hour = %s, want just under 40m", d)
@@ -43,8 +40,7 @@ func TestRenewDelayLeavesAThirdOfTheLife(t *testing.T) {
 	}
 }
 
-// An outage at GitHub must not take away a credential that is still valid, so
-// a failed renewal leaves the file untouched and keeps retrying.
+// A failed renewal leaves the file untouched and is retried.
 func TestFailedRenewalKeepsFile(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "token")
 	if err := writeToken(path, "ghs_current"); err != nil {

@@ -6,8 +6,6 @@ import (
 	"testing"
 )
 
-// Readers open the file at arbitrary moments, so a rewrite must never expose a
-// partial token or a world-readable file.
 func TestWriteTokenIsAtomicAndPrivate(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "token")
