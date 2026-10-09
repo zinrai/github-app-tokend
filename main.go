@@ -31,10 +31,7 @@ func run() error {
 		return nil
 	}
 
-	client, err := newClient(cfg.apiBase, cfg.clientID, cfg.privateKey)
-	if err != nil {
-		return err
-	}
+	client := newClient(cfg.apiBase, cfg.clientID, cfg.privateKey)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

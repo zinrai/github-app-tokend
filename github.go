@@ -2,14 +2,12 @@ package main
 
 import (
 	"context"
-	"crypto/rsa"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 )
@@ -34,27 +32,17 @@ type token struct {
 type client struct {
 	base     string
 	clientID string
-	key      *rsa.PrivateKey
+	keyPath  string
 	http     *http.Client
 }
 
-// newClient assumes the arguments have already been through config.validate,
-// so an empty one here is a programming error rather than a user mistake.
-func newClient(apiBase, clientID, keyPath string) (*client, error) {
-	pemBytes, err := os.ReadFile(keyPath)
-	if err != nil {
-		return nil, err
-	}
-	key, err := parseRSAPrivateKey(pemBytes)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", keyPath, err)
-	}
+func newClient(apiBase, clientID, keyPath string) *client {
 	return &client{
 		base:     apiBase,
 		clientID: clientID,
-		key:      key,
+		keyPath:  keyPath,
 		http:     &http.Client{Timeout: httpTimeout},
-	}, nil
+	}
 }
 
 // mint is the only request this program makes. It carries no body, so the

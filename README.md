@@ -51,6 +51,9 @@ Renewal is requested with a third of the token's life left. A failed renewal is
 logged and retried every thirty seconds, leaving the existing file untouched.
 An outage at GitHub does not take away a credential that is still valid.
 
+The private key is read for every request, so a key replaced in place is used
+from the next renewal on, without a restart.
+
 The file is written to a temporary file in the same directory and renamed into
 place, mode 0600. A reader never sees a partial token.
 

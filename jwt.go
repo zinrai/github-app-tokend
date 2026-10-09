@@ -12,6 +12,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 )
 
@@ -29,6 +30,14 @@ const (
 // signJWT builds the JWT that authenticates as the App itself, which is what
 // GitHub accepts in exchange for an installation token.
 func (c *client) signJWT() (string, error) {
+	// Read for every JWT rather than once at start. A key held from start
+	// would go on signing after it is replaced and deleted on GitHub, and every
+	// renewal would fail until the process was restarted.
+	key, err := c.loadKey()
+	if err != nil {
+		return "", err
+	}
+
 	now := time.Now()
 	claims := struct {
 		Iss string `json:"iss"`
@@ -49,11 +58,23 @@ func (c *client) signJWT() (string, error) {
 		"." + enc.EncodeToString(claimsJSON)
 
 	sum := sha256.Sum256([]byte(signingInput))
-	sig, err := rsa.SignPKCS1v15(rand.Reader, c.key, crypto.SHA256, sum[:])
+	sig, err := rsa.SignPKCS1v15(rand.Reader, key, crypto.SHA256, sum[:])
 	if err != nil {
 		return "", fmt.Errorf("signing JWT: %w", err)
 	}
 	return signingInput + "." + enc.EncodeToString(sig), nil
+}
+
+func (c *client) loadKey() (*rsa.PrivateKey, error) {
+	pemBytes, err := os.ReadFile(c.keyPath)
+	if err != nil {
+		return nil, err
+	}
+	key, err := parseRSAPrivateKey(pemBytes)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", c.keyPath, err)
+	}
+	return key, nil
 }
 
 // GitHub hands out PKCS#1, and nothing in this program converts a key, so

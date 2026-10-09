@@ -5,32 +5,50 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
-	"net/http"
+	"encoding/pem"
+	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 )
 
-func testClient(t *testing.T) *client {
+func writeKey(t *testing.T, path string) *rsa.PrivateKey {
 	t.Helper()
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return &client{
-		base:     defaultAPIBase,
-		clientID: "Iv1.abc123",
-		key:      key,
-		http:     &http.Client{Timeout: 5 * time.Second},
+	block := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)}
+	if err := os.WriteFile(path, pem.EncodeToMemory(block), 0o600); err != nil {
+		t.Fatal(err)
 	}
+	return key
+}
+
+func verifyJWT(jwt string, pub *rsa.PublicKey) error {
+	parts := strings.Split(jwt, ".")
+	if len(parts) != 3 {
+		return fmt.Errorf("want 3 segments, got %d", len(parts))
+	}
+	sig, err := base64.RawURLEncoding.DecodeString(parts[2])
+	if err != nil {
+		return err
+	}
+	sum := sha256.Sum256([]byte(parts[0] + "." + parts[1]))
+	return rsa.VerifyPKCS1v15(pub, crypto.SHA256, sum[:], sig)
 }
 
 // A JWT that does not verify, or one GitHub rejects for exceeding the
 // ten-minute window between iat and exp, makes every request fail.
 func TestSignedJWTVerifiesAndFitsGitHubsWindow(t *testing.T) {
-	c := testClient(t)
+	path := filepath.Join(t.TempDir(), "key.pem")
+	key := writeKey(t, path)
+	c := newClient(defaultAPIBase, "Iv1.abc123", path)
 	tok, err := c.signJWT()
 	if err != nil {
 		t.Fatal(err)
@@ -71,12 +89,23 @@ func TestSignedJWTVerifiesAndFitsGitHubsWindow(t *testing.T) {
 		t.Error("JWT is already expired when issued")
 	}
 
-	sig, err := enc.DecodeString(parts[2])
-	if err != nil {
-		t.Fatal(err)
-	}
-	sum := sha256.Sum256([]byte(parts[0] + "." + parts[1]))
-	if err := rsa.VerifyPKCS1v15(&c.key.PublicKey, crypto.SHA256, sum[:], sig); err != nil {
+	if err := verifyJWT(tok, &key.PublicKey); err != nil {
 		t.Fatalf("signature does not verify: %v", err)
+	}
+}
+
+func TestSignJWTUsesTheKeyFileAsItIsNow(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "key.pem")
+	c := newClient(defaultAPIBase, "Iv1.abc123", path)
+
+	for i := range 2 {
+		key := writeKey(t, path)
+		tok, err := c.signJWT()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := verifyJWT(tok, &key.PublicKey); err != nil {
+			t.Errorf("JWT %d was not signed with the key then in the file: %v", i+1, err)
+		}
 	}
 }
