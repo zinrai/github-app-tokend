@@ -60,5 +60,8 @@ func run() error {
 		"expires_at", tok.ExpiresAt,
 		"repository_selection", tok.RepositorySelection)
 
+	if cfg.oneshot {
+		return nil
+	}
 	return loop(ctx, mint, cfg.out, tok, retryInterval)
 }

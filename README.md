@@ -30,6 +30,10 @@ Applications read the file every time they need the token, not once at startup.
 It is replaced while the token it holds is still valid. The file holds the
 token followed by a newline.
 
+With `-oneshot` the first token is written and the process exits, for a job that
+finishes within the token's life. The exit status is non-zero if no token was
+written.
+
 On GitHub Enterprise Server, pass the REST API root that server documents.
 `-api-base` is used as written and defaults to `https://api.github.com`.
 

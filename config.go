@@ -13,6 +13,7 @@ type config struct {
 	apiBase        string
 	installationID string
 	out            string
+	oneshot        bool
 	showVersion    bool
 }
 
@@ -27,6 +28,7 @@ func parseFlags() (*config, error) {
 	flag.StringVar(&cfg.apiBase, "api-base", defaultAPIBase, "REST API root, used as written")
 	flag.StringVar(&cfg.installationID, "installation-id", "", "installation to mint tokens for")
 	flag.StringVar(&cfg.out, "out", "", "file to write the token to")
+	flag.BoolVar(&cfg.oneshot, "oneshot", false, "write one token and exit instead of renewing it")
 	flag.BoolVar(&cfg.showVersion, "version", false, "print version information and exit")
 	flag.Parse()
 
