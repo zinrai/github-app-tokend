@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"flag"
+	"io"
+	"os"
 )
 
 // config is everything the process was asked to do, settled before the private
@@ -20,16 +22,22 @@ type config struct {
 // parseFlags reads the command line and nowhere else, so what a running process
 // was asked to do is visible in the process listing rather than in whatever
 // happened to be exported around it.
-func parseFlags() (*config, error) {
+func parseFlags(args []string) (*config, error) {
 	var cfg config
-	flag.StringVar(&cfg.clientID, "client-id", "", "GitHub App client ID")
-	flag.StringVar(&cfg.privateKey, "private-key", "", "path to the App private key in PEM form")
-	flag.StringVar(&cfg.apiBase, "api-base", defaultAPIBase, "REST API root, used as written")
-	flag.StringVar(&cfg.installationID, "installation-id", "", "installation to mint tokens for")
-	flag.StringVar(&cfg.out, "out", "", "file to write the token to")
-	flag.BoolVar(&cfg.oneshot, "oneshot", false, "write one token and exit instead of renewing it")
-	flag.BoolVar(&cfg.showVersion, "version", false, "print version information and exit")
-	flag.Parse()
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.StringVar(&cfg.clientID, "client-id", "", "GitHub App client ID")
+	fs.StringVar(&cfg.privateKey, "private-key", "", "path to the App private key in PEM form")
+	fs.StringVar(&cfg.apiBase, "api-base", defaultAPIBase, "REST API root, used as written")
+	fs.StringVar(&cfg.installationID, "installation-id", "", "installation to mint tokens for")
+	fs.StringVar(&cfg.out, "out", "", "file to write the token to")
+	fs.BoolVar(&cfg.oneshot, "oneshot", false, "write one token and exit instead of renewing it")
+	fs.BoolVar(&cfg.showVersion, "version", false, "print version information and exit")
+	if err := fs.Parse(args); err != nil {
+		return nil, err
+	}
+	if err := refuseRepeats(fs, args); err != nil {
+		return nil, err
+	}
 
 	if cfg.showVersion {
 		return &cfg, nil
@@ -38,6 +46,33 @@ func parseFlags() (*config, error) {
 		return nil, err
 	}
 	return &cfg, nil
+}
+
+// refuseRepeats parses args again only to count each flag, as flag lets a
+// repeated one silently replace the first. Wrapping each flag.Value instead
+// would lose the type names and defaults that -h prints.
+func refuseRepeats(fs *flag.FlagSet, args []string) error {
+	count := flag.NewFlagSet(fs.Name(), flag.ContinueOnError)
+	count.SetOutput(io.Discard)
+	seen := make(map[string]bool)
+	fs.VisitAll(func(f *flag.Flag) {
+		if b, ok := f.Value.(interface{ IsBoolFlag() bool }); ok && b.IsBoolFlag() {
+			count.BoolFunc(f.Name, "", onlyOnce(seen, f.Name))
+		} else {
+			count.Func(f.Name, "", onlyOnce(seen, f.Name))
+		}
+	})
+	return count.Parse(args)
+}
+
+func onlyOnce(seen map[string]bool, name string) func(string) error {
+	return func(string) error {
+		if seen[name] {
+			return errors.New("given more than once")
+		}
+		seen[name] = true
+		return nil
+	}
 }
 
 // validate reports every missing flag before anything has an effect. Checked

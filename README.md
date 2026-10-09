@@ -21,7 +21,8 @@ github-app-tokend \
 `-client-id`, `-private-key`, `-installation-id` and `-out` are required, and
 `github-app-tokend -h` lists the rest. The configuration is read from the
 command line and nowhere else, so what a running process was asked to do is
-visible in the process listing.
+visible in the process listing. A flag given twice is refused rather than the
+last one winning.
 
 The client ID is shown on the App's settings page on GitHub. The installation ID
 is the last path segment of the App's installation settings page.

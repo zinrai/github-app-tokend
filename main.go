@@ -22,7 +22,7 @@ func main() {
 }
 
 func run() error {
-	cfg, err := parseFlags()
+	cfg, err := parseFlags(os.Args[1:])
 	if err != nil {
 		return err
 	}
