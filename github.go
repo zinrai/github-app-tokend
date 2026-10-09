@@ -13,7 +13,8 @@ import (
 )
 
 const (
-	httpTimeout = 30 * time.Second
+	httpTimeout      = 30 * time.Second
+	maxResponseBytes = 1 << 20
 
 	// defaultAPIBase is the REST API root of github.com. Enterprise Server
 	// serves the API somewhere else, and the operator passes that root as
@@ -70,7 +71,7 @@ func (c *client) mint(ctx context.Context, installationID string) (*token, error
 	}
 	defer resp.Body.Close()
 
-	raw, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	raw, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseBytes))
 	if err != nil {
 		return nil, err
 	}
