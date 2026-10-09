@@ -83,16 +83,13 @@ func (c *client) mint(ctx context.Context, installationID string) (*token, error
 	if err := json.Unmarshal(raw, &t); err != nil {
 		return nil, err
 	}
-	if err := checkToken(&t); err != nil {
+	if err := checkExpiry(&t); err != nil {
 		return nil, err
 	}
 	return &t, nil
 }
 
-func checkToken(t *token) error {
-	if t.Token == "" {
-		return errors.New("GitHub returned an empty token")
-	}
+func checkExpiry(t *token) error {
 	if t.ExpiresAt.IsZero() {
 		return errors.New("GitHub returned no expiry, cannot schedule renewal")
 	}
