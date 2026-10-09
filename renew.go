@@ -50,10 +50,9 @@ func loop(ctx context.Context, mint minter, out string, tok *token, retry time.D
 	}
 }
 
-// renewalFailure separates the failure that needs no attention from the one
-// where the file has stopped working. An outage lasting hours produces hundreds
-// of these lines, and only the second kind means the applications reading the
-// file are getting 401s.
+// renewalFailure tells a failure while the token still works from one after it
+// has expired. One message for both would bury the second, the one meaning
+// readers get 401s, among hundreds of the first during a long outage.
 func renewalFailure(expiresAt time.Time) string {
 	if time.Now().Before(expiresAt) {
 		return "renewal failed, keeping the current token"
@@ -61,10 +60,9 @@ func renewalFailure(expiresAt time.Time) string {
 	return "renewal failed and the token in the file has expired"
 }
 
-// renewDelay leaves a third of the token's remaining life for renewal to
-// happen in, which is where Vault and kubelet land on the same problem. Taking
-// a fraction rather than a fixed offset keeps any assumption about how long
-// GitHub makes a token last out of this program.
+// renewDelay leaves a third of the remaining life for renewal. A fixed offset
+// instead would build in an assumption about how long GitHub makes a token
+// last.
 func renewDelay(expiresAt time.Time) time.Duration {
 	if d := time.Until(expiresAt) * 2 / 3; d > 0 {
 		return d

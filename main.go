@@ -36,8 +36,6 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	// The installation is fixed for the life of the process, so every request
-	// the loop makes is this same one.
 	mint := func(ctx context.Context) (*token, error) {
 		return client.mint(ctx, cfg.installationID)
 	}

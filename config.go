@@ -17,9 +17,8 @@ type config struct {
 	showVersion    bool
 }
 
-// parseFlags reads the configuration from the command line and nowhere else.
-// What a running process was asked to do, including how far the token it hands
-// out reaches, is then visible in the process listing rather than in whatever
+// parseFlags reads the command line and nowhere else, so what a running process
+// was asked to do is visible in the process listing rather than in whatever
 // happened to be exported around it.
 func parseFlags() (*config, error) {
 	var cfg config
@@ -41,10 +40,9 @@ func parseFlags() (*config, error) {
 	return &cfg, nil
 }
 
-// validate rejects every combination the process cannot act on, in one place
-// and before any of them has an effect. Checking a flag where it happens to be
-// used instead would report a missing key after the daemon had already opened
-// the key file.
+// validate reports every missing flag before anything has an effect. Checked
+// where each is used instead, a missing -out would surface only after a token
+// had been requested from GitHub.
 func (c *config) validate() error {
 	switch {
 	case c.clientID == "":
