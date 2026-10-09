@@ -1,5 +1,5 @@
 // Command github-app-tokend keeps a GitHub App installation access token in a
-// file, rewriting it before it expires.
+// file, rewriting it before it expires, or with -oneshot writes one and exits.
 //
 // Applications read the file every time they need the token and do nothing
 // else. No JWT signing, no GitHub API code and no private key on their side.

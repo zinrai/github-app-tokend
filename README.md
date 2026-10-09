@@ -1,7 +1,7 @@
 # github-app-tokend
 
 Keeps a GitHub App installation access token in a file, rewriting it before it
-expires.
+expires, or with `-oneshot` writes one and exits.
 
 Applications read the file when they need the token. They do not sign JWTs,
 call the GitHub API, or hold the App private key.
@@ -70,6 +70,12 @@ No audit. Reads of the file are not recorded.
 
 No expiry detection. If renewal keeps failing until the token expires, the file
 holds a dead token and requests using it return 401. Watch the logs.
+
+## Requires
+
+A GitHub App installed where the token is to be used, and the private key
+GitHub generated for it, as the PKCS#1 PEM file it downloads. A key converted
+to another encoding is refused.
 
 ## License
 
