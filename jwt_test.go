@@ -20,10 +20,10 @@ func testClient(t *testing.T) *client {
 		t.Fatal(err)
 	}
 	return &client{
-		base:  defaultAPIBase,
-		appID: "12345",
-		key:   key,
-		http:  &http.Client{Timeout: 5 * time.Second},
+		base:     defaultAPIBase,
+		clientID: "Iv1.abc123",
+		key:      key,
+		http:     &http.Client{Timeout: 5 * time.Second},
 	}
 }
 
@@ -61,7 +61,7 @@ func TestSignedJWTVerifiesAndFitsGitHubsWindow(t *testing.T) {
 	if err := json.Unmarshal(raw, &claims); err != nil {
 		t.Fatal(err)
 	}
-	if claims.Iss != "12345" {
+	if claims.Iss != "Iv1.abc123" {
 		t.Errorf("iss = %q", claims.Iss)
 	}
 	if span := claims.Exp - claims.Iat; span > 600 {

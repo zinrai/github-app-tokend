@@ -7,7 +7,7 @@ import "testing"
 // with no file to show for it.
 func TestValidateRequiredFlags(t *testing.T) {
 	full := config{
-		appID:          "12345",
+		clientID:       "Iv1.abc123",
 		privateKey:     "/etc/github-app-tokend/key.pem",
 		installationID: "87654321",
 		out:            "/run/github-app-tokend/token",
@@ -17,7 +17,7 @@ func TestValidateRequiredFlags(t *testing.T) {
 	}
 
 	for name, clear := range map[string]func(*config){
-		"-app-id":          func(c *config) { c.appID = "" },
+		"-client-id":       func(c *config) { c.clientID = "" },
 		"-private-key":     func(c *config) { c.privateKey = "" },
 		"-installation-id": func(c *config) { c.installationID = "" },
 		"-out":             func(c *config) { c.out = "" },

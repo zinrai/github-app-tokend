@@ -12,19 +12,19 @@ A single static binary with no dependencies outside the standard library.
 
 ```
 github-app-tokend \
-  -app-id 12345 \
+  -client-id Iv1.abc123 \
   -private-key /etc/github-app-tokend/key.pem \
   -installation-id 87654321 \
   -out /run/github-app-tokend/token
 ```
 
-`-app-id`, `-private-key`, `-installation-id` and `-out` are required, and
+`-client-id`, `-private-key`, `-installation-id` and `-out` are required, and
 `github-app-tokend -h` lists the rest. The configuration is read from the
 command line and nowhere else, so what a running process was asked to do is
 visible in the process listing.
 
-The installation ID is the last path segment of the App's installation settings
-page on GitHub.
+The client ID is shown on the App's settings page on GitHub. The installation ID
+is the last path segment of the App's installation settings page.
 
 Applications read the file every time they need the token, not once at startup.
 It is replaced while the token it holds is still valid. The file holds the

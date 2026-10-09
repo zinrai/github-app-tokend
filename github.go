@@ -32,15 +32,15 @@ type token struct {
 }
 
 type client struct {
-	base  string
-	appID string
-	key   *rsa.PrivateKey
-	http  *http.Client
+	base     string
+	clientID string
+	key      *rsa.PrivateKey
+	http     *http.Client
 }
 
 // newClient assumes the arguments have already been through config.validate,
 // so an empty one here is a programming error rather than a user mistake.
-func newClient(apiBase, appID, keyPath string) (*client, error) {
+func newClient(apiBase, clientID, keyPath string) (*client, error) {
 	pemBytes, err := os.ReadFile(keyPath)
 	if err != nil {
 		return nil, err
@@ -50,10 +50,10 @@ func newClient(apiBase, appID, keyPath string) (*client, error) {
 		return nil, fmt.Errorf("%s: %w", keyPath, err)
 	}
 	return &client{
-		base:  apiBase,
-		appID: appID,
-		key:   key,
-		http:  &http.Client{Timeout: httpTimeout},
+		base:     apiBase,
+		clientID: clientID,
+		key:      key,
+		http:     &http.Client{Timeout: httpTimeout},
 	}, nil
 }
 

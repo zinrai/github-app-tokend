@@ -8,7 +8,7 @@ import (
 // config is everything the process was asked to do, settled before the private
 // key is read and before the first request goes out.
 type config struct {
-	appID          string
+	clientID       string
 	privateKey     string
 	apiBase        string
 	installationID string
@@ -22,7 +22,7 @@ type config struct {
 // happened to be exported around it.
 func parseFlags() (*config, error) {
 	var cfg config
-	flag.StringVar(&cfg.appID, "app-id", "", "GitHub App ID or client ID")
+	flag.StringVar(&cfg.clientID, "client-id", "", "GitHub App client ID")
 	flag.StringVar(&cfg.privateKey, "private-key", "", "path to the App private key in PEM form")
 	flag.StringVar(&cfg.apiBase, "api-base", defaultAPIBase, "REST API root, used as written")
 	flag.StringVar(&cfg.installationID, "installation-id", "", "installation to mint tokens for")
@@ -45,8 +45,8 @@ func parseFlags() (*config, error) {
 // the key file.
 func (c *config) validate() error {
 	switch {
-	case c.appID == "":
-		return errors.New("-app-id is required")
+	case c.clientID == "":
+		return errors.New("-client-id is required")
 	case c.privateKey == "":
 		return errors.New("-private-key is required")
 	case c.installationID == "":

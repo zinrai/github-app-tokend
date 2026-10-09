@@ -31,7 +31,7 @@ func run() error {
 		return nil
 	}
 
-	client, err := newClient(cfg.apiBase, cfg.appID, cfg.privateKey)
+	client, err := newClient(cfg.apiBase, cfg.clientID, cfg.privateKey)
 	if err != nil {
 		return err
 	}

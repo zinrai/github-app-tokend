@@ -2,7 +2,7 @@
 # repository and have to be supplied before this runs:
 #
 #   compose/key.pem   the App private key, readable by uid 10001
-#   -app-id and -installation-id below, replaced with your own
+#   -client-id and -installation-id below, replaced with your own
 #
 name: github-app-tokend
 
@@ -25,7 +25,7 @@ services:
       init:
         condition: service_completed_successfully
     command:
-      - -app-id=12345
+      - -client-id=Iv1.abc123
       - -installation-id=87654321
       - -private-key=/etc/github-app-tokend/key.pem
       - -out=/token/token

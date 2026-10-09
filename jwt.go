@@ -35,7 +35,7 @@ func (c *client) signJWT() (string, error) {
 		Iat int64  `json:"iat"`
 		Exp int64  `json:"exp"`
 	}{
-		Iss: c.appID,
+		Iss: c.clientID,
 		Iat: now.Add(-clockSkew).Unix(),
 		Exp: now.Add(jwtLifetime).Unix(),
 	}
