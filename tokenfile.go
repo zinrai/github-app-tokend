@@ -19,9 +19,6 @@ func writeToken(path, tok string) error {
 		os.Remove(tmp)
 	}()
 
-	if err := f.Chmod(0o600); err != nil {
-		return err
-	}
 	if _, err := f.WriteString(tok + "\n"); err != nil {
 		return err
 	}
