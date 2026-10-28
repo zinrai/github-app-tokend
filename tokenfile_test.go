@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestWriteTokenIsAtomicAndPrivate(t *testing.T) {
+func TestWriteTokenLeavesOnePrivateFileWithTheLastToken(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "token")
 
