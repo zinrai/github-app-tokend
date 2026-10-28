@@ -11,6 +11,7 @@ import (
 )
 
 // runLoop starts loop in the background and returns a function that stops it.
+// The loop is also stopped when the test ends, even after t.Fatal.
 func runLoop(t *testing.T, mint minter, out string, tok *token) func() {
 	t.Helper()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -22,9 +23,20 @@ func runLoop(t *testing.T, mint minter, out string, tok *token) func() {
 			t.Errorf("loop: %v", err)
 		}
 	}()
-	return func() {
+	stop := sync.OnceFunc(func() {
 		cancel()
 		wg.Wait()
+	})
+	t.Cleanup(stop)
+	return stop
+}
+
+func waitForMint(t *testing.T, called <-chan struct{}) {
+	t.Helper()
+	select {
+	case <-called:
+	case <-time.After(5 * time.Second):
+		t.Fatal("loop did not call mint")
 	}
 }
 
@@ -59,8 +71,8 @@ func TestFailedRenewalKeepsFile(t *testing.T) {
 	// Already past its expiry, so renewal is due immediately.
 	tok := &token{Token: "ghs_current", ExpiresAt: time.Now().Add(-time.Minute)}
 	stop := runLoop(t, mint, path, tok)
-	<-attempts
-	<-attempts
+	waitForMint(t, attempts)
+	waitForMint(t, attempts)
 	stop()
 
 	b, err := os.ReadFile(path)
@@ -98,8 +110,8 @@ func TestSuccessfulRenewalRewritesFile(t *testing.T) {
 
 	tok := &token{Token: "ghs_old", ExpiresAt: time.Now().Add(-time.Minute)}
 	stop := runLoop(t, mint, path, tok)
-	<-minted
-	<-minted
+	waitForMint(t, minted)
+	waitForMint(t, minted)
 	stop()
 
 	b, err := os.ReadFile(path)
