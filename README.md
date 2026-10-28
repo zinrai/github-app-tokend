@@ -41,6 +41,9 @@ On GitHub Enterprise Server, pass the REST API root that server documents.
 -api-base https://ghe.example.jp/api/v3
 ```
 
+`examples/docker-compose.yaml` runs the daemon next to a program that reads the
+file. Release images are published as `ghcr.io/zinrai/github-app-tokend`.
+
 ## Guarantees
 
 The first token is requested before the process enters its loop, so a

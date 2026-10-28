@@ -18,8 +18,7 @@ services:
 
   tokend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
     image: github-app-tokend:dev
     depends_on:
       init:
