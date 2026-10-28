@@ -23,12 +23,9 @@ const (
 )
 
 type token struct {
-	Token     string    `json:"token"`
-	ExpiresAt time.Time `json:"expires_at"`
-	// RepositorySelection is "all" or "selected", the reach of the installation
-	// as GitHub reports it. It is logged because no narrowing is requested here,
-	// so the installation alone decides that reach.
-	RepositorySelection string `json:"repository_selection"`
+	Token               string    `json:"token"`
+	ExpiresAt           time.Time `json:"expires_at"`
+	RepositorySelection string    `json:"repository_selection"`
 }
 
 type client struct {
