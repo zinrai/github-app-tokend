@@ -4,11 +4,12 @@ FROM golang:1.26-trixie AS build
 # which is what a build outside a release is.
 ARG VERSION=dev
 ARG COMMIT=none
+ARG DATE=unknown
 
 WORKDIR /src
 COPY go.mod *.go ./
 RUN CGO_ENABLED=0 go build -trimpath \
-    -ldflags="-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}" \
+    -ldflags="-s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" \
     -o /github-app-tokend
 
 FROM debian:trixie-slim
