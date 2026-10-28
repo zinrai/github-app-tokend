@@ -18,8 +18,8 @@ def log(message):
 
 def call(token_file, url):
     # Read the token again every time. Holding onto the first one would work
-    # for fifty minutes and then stop, which is the mistake this program exists
-    # to not make.
+    # until it expired, an hour at most, and then stop, which is the mistake
+    # this program exists to not make.
     with open(token_file) as f:
         token = f.read().strip()
 
