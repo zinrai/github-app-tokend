@@ -47,8 +47,6 @@ func newClient(apiBase, clientID, keyPath string) *client {
 	}
 }
 
-// mint is the only request this program makes. It carries no body, so the
-// token comes back with everything the installation grants.
 func (c *client) mint(ctx context.Context, installationID string) (*token, error) {
 	jwt, err := c.signJWT()
 	if err != nil {
@@ -56,6 +54,8 @@ func (c *client) mint(ctx context.Context, installationID string) (*token, error
 	}
 
 	u := c.base + "/app/installations/" + url.PathEscape(installationID) + "/access_tokens"
+	// Sent without a body. Asking for fewer repositories or permissions would
+	// put into this program a decision the installation already makes.
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u, nil)
 	if err != nil {
 		return nil, err
