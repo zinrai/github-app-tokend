@@ -38,7 +38,7 @@ On GitHub Enterprise Server, pass the REST API root that server documents.
 `-api-base` is used as written and defaults to `https://api.github.com`.
 
 ```
--api-base https://ghe.example.jp/api/v3
+-api-base https://ghe.example.com/api/v3
 ```
 
 `examples/docker-compose.yaml` runs the daemon next to a program that reads the
