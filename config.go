@@ -6,8 +6,6 @@ import (
 	"os"
 )
 
-// config is everything the process was asked to do, settled before the private
-// key is read and before the first request goes out.
 type config struct {
 	clientID       string
 	privateKey     string

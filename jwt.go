@@ -27,8 +27,6 @@ const (
 	jwtLifetime = 5 * time.Minute
 )
 
-// signJWT builds the JWT that authenticates as the App itself, which is what
-// GitHub accepts in exchange for an installation token.
 func (c *client) signJWT() (string, error) {
 	// Read for every JWT rather than once at start. A key held from start
 	// would go on signing after it is replaced and deleted on GitHub, and every
